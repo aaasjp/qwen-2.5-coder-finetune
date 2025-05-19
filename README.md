@@ -3,7 +3,7 @@ conda create -n qwen-coder-sft python=3.9
 conda activate qwen-coder-sft
 
 # 2.安装依赖
-pip install -r requirements.txt
+pip install -r dev-requirements.txt
 
 # 3.数据tokenize
 样例数据在finetuning/sft/data下面
