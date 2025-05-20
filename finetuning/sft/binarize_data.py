@@ -65,8 +65,13 @@ response
         role = roles.get(sentence["role"])
         if not role:
             raise ValueError(f"Unknown role '{sentence['role']}' encountered.")
-        
-        _input_id = tokenizer(role).input_ids + nl_tokens + tokenizer(sentence["content"], add_special_tokens=False).input_ids + [im_end] + nl_tokens
+        try:
+            _input_id = tokenizer(role).input_ids + nl_tokens + tokenizer(sentence["content"], add_special_tokens=False).input_ids + [im_end] + nl_tokens
+        except Exception as e:
+            print(f"--------chatml_format_preprocess error: {e}")
+            print(f"--------chatml_format_preprocess role: {role}")
+            print(f"--------chatml_format_preprocess sentence: {sentence}")
+            raise e
         input_id += _input_id
 
         if role == '<|im_start|>user' or (only_last_turn_loss and j < len(sources[1:]) - 1):
@@ -106,6 +111,7 @@ def read_file_from_position_with_chatml_format_processor(args):
     filename, start_position, end_position, worker_id, args = args
     tokenizer = args["tokenizer"]
     max_len = args["max_len"]
+    print(f"--------read_file_from_position_with_chatml_format_processor max_len: {max_len}")
     objs = []
     with open(filename, 'r', encoding='utf-8', errors='replace') as f:  # Using 'replace' to handle errors better
         current_position = utils.find_next_line(f, start_position)
@@ -117,6 +123,7 @@ def read_file_from_position_with_chatml_format_processor(args):
             line = f.readline()
             if not line:
                 break
+
             try:
                 obj = json.loads(line)
             except:
@@ -131,6 +138,7 @@ def read_file_from_position_with_chatml_format_processor(args):
             if f.tell() >= end_position:
                 break
     print(f"worker_id {worker_id} completed")
+    print(f"--------len(objs): {len(objs)}")
     return objs
 
 def convert_to_uint32(x):
@@ -192,7 +200,7 @@ def parse_args():
     parser.add_argument('--output_path', '-output_path', type=str, default="./raw/sft.jsonl.sampled.processed", help='Path to output file')
     parser.add_argument('--workers', '-workers', type=int, default=1, help='Number of workers')
     parser.add_argument('--chunk_size', '-chunk_size', type=float, default=0.1 * 2 ** 30, help='Chunk size for file processing')
-    parser.add_argument('--max_len', '-max_len', type=int, default=8192, help='Maximum length for tokenization')
+    parser.add_argument('--max_len', '-max_len', type=int, default=8192*5, help='Maximum length for tokenization')
     parser.add_argument('--tokenizer_path', '-tokenizer_path', type=str, default="./pretrained_models/qwen/Qwen2.5-Coder-7B/", help='Path to tokenizer')
     parser.add_argument('--save_format', '-save_format', type=str, default=".npy", help='Path to tokenizer')
     return parser.parse_args()
@@ -200,7 +208,7 @@ def parse_args():
 
 if __name__ == "__main__":
     args = parse_args()
-    print(args)
+    print(f"--------args: {args}")
     tokenizer = transformers.AutoTokenizer.from_pretrained(
         args.tokenizer_path,
         add_eos_token=False,

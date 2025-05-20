@@ -30,6 +30,8 @@ class SupervisedDataset(Dataset):
             self.labels = [torch.tensor(example["label"], dtype=torch.long) for example in self.input_ids if len(example["input_ids"]) < args.model_max_length]
             self.input_ids = [torch.tensor(example["input_ids"], dtype=torch.long) for example in self.input_ids if len(example["input_ids"]) < args.model_max_length]
         print(f"Samples: {original_data_num} -> {len(self.input_ids)}")
+        #print(f"self.input_ids: {self.input_ids}")
+        #print(f"self.labels: {self.labels}")
 
 
     def __len__(self):

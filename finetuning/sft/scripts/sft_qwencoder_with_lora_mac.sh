@@ -20,7 +20,7 @@ LR=5e-5
 MIN_LR=5e-6
 WARMUP_STEPS=100
 WEIGHT_DECAY=0.0
-MAX_LENGTH=1280
+MAX_LENGTH=32000
 
 echo "DATA_PATH: $DATA_PATH"
 echo "PRETRAINED_MODEL: $PRETRAINED_MODEL"
@@ -31,7 +31,7 @@ echo "WARMUP_STEPS: $WARMUP_STEPS"
 echo "WEIGHT_DECAY: $WEIGHT_DECAY"
 echo "MAX_LENGTH: $MAX_LENGTH"
 
-cd /Users/ailabuser7-1/Documents/cursor-workspace/Qwen2.5-Coder/finetuning/sft/
+cd /Users/ailabuser7-1/Documents/cursor-workspace/qwen-2.5-coder-finetune/finetuning/sft/
 
 python train.py \
     --model_name_or_path ${PRETRAINED_MODEL} \
