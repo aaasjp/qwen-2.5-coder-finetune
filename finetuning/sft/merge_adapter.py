@@ -2,6 +2,7 @@ from transformers import AutoTokenizer
 import argparse
 from peft import AutoPeftModelForCausalLM, PeftConfig
 import os
+import torch
 
 def merge_all_checkpoint_with_adapter(base_model_path, train_adapters_path, output_path):
     for root, dirs, files in os.walk(train_adapters_path):
@@ -17,9 +18,10 @@ def merge_adapter(base_model_path, adapter_dir, output_path):
     peft_model = AutoPeftModelForCausalLM.from_pretrained(
         adapter_dir,
         config=peft_config,
+        torch_dtype=torch.bfloat16,
     )
     merged_model = peft_model.merge_and_unload(progressbar=True)
-    merged_model.save_pretrained(output_path)
+    merged_model.save_pretrained(output_path, torch_dtype=torch.bfloat16)
     tokenizer = AutoTokenizer.from_pretrained(base_model_path)
     tokenizer.save_pretrained(output_path)
 
@@ -34,7 +36,7 @@ if __name__ == "__main__":
     args = parse_args()
     print(args)
     # 最后一个再保存一下
-    merge_all_checkpoint_with_adapter(args.base_model_path, args.train_adapters_path, args.output_path)
+    # merge_all_checkpoint_with_adapter(args.base_model_path, args.train_adapters_path, args.output_path)
     # all
     merge_adapter(args.base_model_path, args.train_adapters_path, args.output_path)
     

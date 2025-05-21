@@ -18,7 +18,7 @@ LR=5e-5
 MIN_LR=5e-6
 WARMUP_STEPS=100
 WEIGHT_DECAY=0.0
-MAX_LENGTH=32000
+MAX_LENGTH=8192
 
 echo "DATA_PATH: $DATA_PATH"
 echo "PRETRAINED_MODEL: $PRETRAINED_MODEL"
@@ -36,8 +36,9 @@ python train.py \
     --data_path $DATA_PATH \
     --model_max_length ${MAX_LENGTH} \
     --output_dir ${OUTPUT_DIR} \
-    --per_device_train_batch_size 4 \
-    --gradient_accumulation_steps 4 \
+    --per_device_train_batch_size 1 \
+    --gradient_accumulation_steps 1 \
+    --per_device_eval_batch_size 2 \
     --num_train_epochs 3 \
     --save_strategy "steps" \
     --save_steps 100 \

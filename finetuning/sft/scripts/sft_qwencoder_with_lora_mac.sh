@@ -16,11 +16,12 @@ OUTPUT_DIR=${OUTPUT_DIR:-"./checkpoints/sft_lora_model/${MODEL_SIZE}"}
 
 PEFT_CONFIG_FOLDER="./configs/lora"
 
-LR=5e-5
-MIN_LR=5e-6
+LR=1e-5
+MIN_LR=1e-6
 WARMUP_STEPS=100
-WEIGHT_DECAY=0.0
-MAX_LENGTH=32000
+WEIGHT_DECAY=0.01
+MAX_LENGTH=4096
+MAX_GRAD_NORM=1.0
 
 echo "DATA_PATH: $DATA_PATH"
 echo "PRETRAINED_MODEL: $PRETRAINED_MODEL"
@@ -30,6 +31,7 @@ echo "MIN_LR: $MIN_LR"
 echo "WARMUP_STEPS: $WARMUP_STEPS"
 echo "WEIGHT_DECAY: $WEIGHT_DECAY"
 echo "MAX_LENGTH: $MAX_LENGTH"
+echo "MAX_GRAD_NORM: $MAX_GRAD_NORM"
 
 cd /Users/ailabuser7-1/Documents/cursor-workspace/qwen-2.5-coder-finetune/finetuning/sft/
 
@@ -39,8 +41,9 @@ python train.py \
     --model_max_length ${MAX_LENGTH} \
     --output_dir ${OUTPUT_DIR} \
     --num_train_epochs 3 \
-    --per_device_train_batch_size 4 \
-    --gradient_accumulation_steps 4 \
+    --per_device_train_batch_size 1 \
+    --gradient_accumulation_steps 8 \
+    --per_device_eval_batch_size 1 \
     --save_strategy "steps" \
     --save_steps 100 \
     --save_total_limit 100 \
@@ -53,3 +56,5 @@ python train.py \
     --truncate_source False \
     --use_peft True \
     --peft_config_path ${PEFT_CONFIG_FOLDER} \
+    --max_grad_norm ${MAX_GRAD_NORM} \
+    --gradient_checkpointing True \

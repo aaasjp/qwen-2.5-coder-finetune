@@ -11,6 +11,10 @@ checkpoints/
 finetuning/sft/checkpoints/
 **/checkpoints/
 
+merged_models/
+finetuning/sft/merged_models/
+**/merged_models/
+
 # C extensions
 *.so
 

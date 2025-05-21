@@ -25,7 +25,7 @@ def chatml_format_preprocess(sources,
         tokenizer: transformers.PreTrainedTokenizer, max_len: int, 
         system_message: str = "You are a helpful assistant.", 
         only_last_turn_loss=False,
-        return_test_input_ids = False
+        return_test_input_ids = True
     ) -> Dict:
     """
 <|im_start|>[system][\n]

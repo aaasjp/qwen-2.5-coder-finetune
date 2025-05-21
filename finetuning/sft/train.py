@@ -182,6 +182,38 @@ def find_latest_checkpoint(output_dir):
 
 
 class CustomTrainer(Trainer):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.max_grad_norm = 1.0  # 添加梯度裁剪阈值
+
+    def compute_loss(self, model, inputs, return_outputs=False):
+        """
+        重写 compute_loss 方法以支持混合精度训练
+        """
+        if self.args.fp16:
+            with torch.cuda.amp.autocast():
+                outputs = model(**inputs)
+                loss = outputs.loss
+        else:
+            outputs = model(**inputs)
+            loss = outputs.loss
+
+        if return_outputs:
+            return loss, outputs
+        return loss
+
+    def training_step(self, model, inputs):
+        """
+        重写 training_step 方法以添加梯度裁剪
+        """
+        loss = super().training_step(model, inputs)
+        
+        # 添加梯度裁剪
+        if self.args.gradient_accumulation_steps == 1:
+            torch.nn.utils.clip_grad_norm_(model.parameters(), self.max_grad_norm)
+            
+        return loss
+
     def log(self, logs: Dict[str, float]) -> None:
         """
         Log `logs` on the various objects watching training.
@@ -212,7 +244,8 @@ def train():
         model_args.model_name_or_path,
         cache_dir=training_args.cache_dir,
         attn_implementation="flash_attention_2" if model_args.use_flash_attention else None,
-        trust_remote_code = True
+        trust_remote_code = True,
+        device_map="auto"
     )
     if training_args.use_peft:
         peft_config = PeftConfig.from_pretrained(training_args.peft_config_path)
@@ -227,7 +260,8 @@ def train():
         model_max_length = training_args.model_max_length,
         truncation = True,
         padding_side = "right",
-        trust_remote_code = True
+        trust_remote_code = True,
+        device_map="auto"
     )
     tokenizer.add_special_tokens({"additional_special_tokens": ["<|im_end|>", "<|im_start|>"]})
     data_module = make_supervised_data_module(tokenizer=tokenizer, args=args)
