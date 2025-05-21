@@ -1,0 +1,18 @@
+最近在做一个代码大模型微调的工作，找了bigcode排名第一的qwen-2.5-coder进行微调。下面记录下自己做的工作和遇到的问题：
+1.首先把qwen-2.5-coder的report从头到尾看了一遍，coder模型主要是基于qwen-base模型微调而来，最新版本的coder模型，增加了利用fill-in-middle技术，增加了新的token，主要为了进行代码补全和github多文档上下文。
+2.查阅了coder模型使用的评估数据集，包括CrossCodeEval，humaneval，cruxeval等。模型的性能跟选取的数据有根本关系，而且qwen-coder对数据处理也进行了各种高质量语料的构建，包括利用大模型进行数据合成
+3.看了qwen-2.5-coder的源代码，发现还是有各种问题，主要是文档里面写的不清晰。着重看了下代码中对message套用模版的处理，发现在sft中，并没有使用fill-in-middle的模版，比如：<|fim_prefix|>", "<|fim_middle|>", "<|fim_suffix|>", "<|repo_name|>
+4.源代码中使用sft的时候，使用torchrun框架，但是由于我使用的是mac studio，发现跑不起来。明天需要继续解决这个问题。
+今日到此结束，nice day
+
+
+继续上次finetune qwen-2.5-coder遇到的问题，做了下面的修改：
+1.修改了sft_qwencoder.sh的分布式训练微调方式，改成了单节点单卡的运行方式
+2.由于mac不支持mixed precision和deepspeed，所以把torchrun运行方式改成python直接运行
+3.需要修改is_master方法，因为mac不支持cuda，所以遇到get_rank的时候，遇到异常直接返回True，表面是单机单节点
+4.在512G显存的mac配置上，发现finetune 7B和32B都会遇到oom的问题，后来增加了gradient_checkpointing的支持，把显存降到100G左右，这样7B，32B和72B都能finetune起来
+5.在finetune的过程中发现gradient 为nan的情况，说明发生了梯度爆炸的现象，所以重写了Trainer类下的training_step方法，对gradient进行剪切clip_grad_norm。
+6.训练完后，对base模型和adapter合并的时候，发现原本70多G的base模型，合并后，达到了100多G，理论上lora方式微调只会增加不到1%的参数量，后来发现是在进行模型save的时候，没有指定dtype，导致默认是单精度float32，直接比原本的bfloat16扩大了一倍，所以修改了代码中保存模型的dtype，合并后模型大小正常
+7.对训练后的模型进行推理测试，发现可以正常推理,但是发现个问题，当prompt很长的时候，比如超过4k个，基本上推理显存能达到500多G，所以配置了use_cache=False，但是在from_pretrained里面配置use_cache是不生效的，在generate方法中配置是生效的。显存从500多G降到100多G。但是推理速度会很慢很慢。
+8.在推理的时候尝试使用模型量化，利用accelerate和bitsandbytes进行int8量化，但是发现mac不支持bitsandbytes量化，只在nvidia卡上支持。
+下一步的动作，要收集更多的微调数据，另外需要对微调的效果进行评估，还要测试模型微调后的之前的代码能力是否下降。
