@@ -1,6 +1,7 @@
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
-model_name = "/Users/ailabuser7-1/Documents/cursor-workspace/qwen-2.5-coder-finetune/finetuning/sft/checkpoints/sft_model/7B"
+# model_name = "/Users/ailabuser7-1/Documents/cursor-workspace/qwen-2.5-coder-finetune/finetuning/sft/checkpoints/sft_model/7B"
+model_name = "/Users/ailabuser7-1/Documents/cursor-workspace/qwen-2.5-coder-finetune/finetuning/sft/merged_models/32B"
 
 model = AutoModelForCausalLM.from_pretrained(
     model_name,
