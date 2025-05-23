@@ -214,7 +214,7 @@ class CustomTrainer(Trainer):
             
         return loss
 
-    def log(self, logs: Dict[str, float]) -> None:
+    def log(self, logs: Dict[str, float], start_time: Optional[float] = None) -> None:
         """
         Log `logs` on the various objects watching training.
 
@@ -223,6 +223,8 @@ class CustomTrainer(Trainer):
         Args:
             logs (`Dict[str, float]`):
                 The values to log.
+            start_time (`float`, *optional*):
+                The start time of the training step.
         """
         if self.state.epoch is not None:
             logs["epoch"] = self.state.epoch
@@ -237,6 +239,9 @@ class CustomTrainer(Trainer):
 def train():
     parser = transformers.HfArgumentParser((ModelArguments, DataArguments, TrainingArguments))
     model_args, data_args, training_args = parser.parse_args_into_dataclasses()
+    print(f"model_args: {model_args}")
+    print(f"data_args: {data_args}")
+    print(f"training_args: {training_args}")
     args = {**model_args.__dict__, **data_args.__dict__, **training_args.__dict__}
     args = argparse.Namespace(**args)
     #logging.info(args)

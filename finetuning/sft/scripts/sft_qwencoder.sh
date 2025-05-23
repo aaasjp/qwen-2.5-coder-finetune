@@ -1,7 +1,7 @@
 export NCCL_IB_TC=136
 export NCCL_IB_SL=5
 export NCCL_IB_GID_INDEX=3
-export NCCL_SOCKET_IFNAME=bond0
+export NCCL_SOCKET_IFNAME=eth0
 export NCCL_DEBUG=INFO
 export NCCL_IB_HCA=mlx5
 export NCCL_IB_TIMEOUT=22

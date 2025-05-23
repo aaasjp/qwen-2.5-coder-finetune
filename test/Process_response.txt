@@ -1,0 +1,117 @@
+```json
+[
+  {
+    "assetId": "process_001",
+    "assetType": "LOGIC",
+    "assetSubType": "PROCESS",
+    "name": "课程发布流程",
+    "description": "该流程描述了管理端发布课程的基本步骤，包括验证课程信息、停用旧的课程映射、更新课程状态和刷新最近学习记录。",
+    "version": "1.0.0",
+    "status": "PUBLISHED",
+    "tags": ["课程管理", "发布"],
+    "businessDomain": "课程管理",
+    "createdInfo": {
+      "creator": "system",
+      "createdAt": "2023-10-01T12:00:00Z",
+      "source": "GENERATED"
+    },
+    "modifiedInfo": {
+      "lastModifier": "system",
+      "lastModifiedAt": "2023-10-01T12:00:00Z"
+    },
+    "logicInfo": {
+      "purpose": "发布课程",
+      "scope": "管理端",
+      "executionContext": "课程发布"
+    },
+    "ruleInfo": {
+      "domain": "课程管理",
+      "category": "发布规则",
+      "priority": "高",
+      "executionMode": "ALL"
+    },
+    "content": {
+      "process": {
+        "startEvent": {
+          "id": "start_001",
+          "name": "课程发布请求"
+        },
+        "activities": [
+          {
+            "id": "act_001",
+            "name": "验证课程信息",
+            "type": "ServiceTask",
+            "description": "验证课程ID、课程内容、课程学员范围和共享范围是否配置完成。",
+            "inputs": ["CourseStudentVo"],
+            "outputs": ["验证结果"]
+          },
+          {
+            "id": "act_002",
+            "name": "停用旧的课程映射",
+            "type": "ServiceTask",
+            "description": "如果课程已经存在映射关系，则先删除旧的映射关系。",
+            "inputs": ["课程ID列表"],
+            "outputs": ["删除结果"]
+          },
+          {
+            "id": "act_003",
+            "name": "更新课程状态",
+            "type": "ServiceTask",
+            "description": "更新课程状态为已发布，并同步课程映射信息。",
+            "inputs": ["课程ID"],
+            "outputs": ["更新结果"]
+          },
+          {
+            "id": "act_004",
+            "name": "刷新最近学习记录",
+            "type": "ServiceTask",
+            "description": "刷新最近学习记录。",
+            "inputs": ["课程ID"],
+            "outputs": ["刷新结果"]
+          }
+        ],
+        "gateways": [],
+        "sequenceFlows": [
+          {
+            "id": "flow_001",
+            "sourceRef": "start_001",
+            "targetRef": "act_001"
+          },
+          {
+            "id": "flow_002",
+            "sourceRef": "act_001",
+            "targetRef": "act_002"
+          },
+          {
+            "id": "flow_003",
+            "sourceRef": "act_002",
+            "targetRef": "act_003"
+          },
+          {
+            "id": "flow_004",
+            "sourceRef": "act_003",
+            "targetRef": "act_004"
+          }
+        ],
+        "endEvents": [
+          {
+            "id": "end_001",
+            "name": "课程发布成功"
+          }
+        ]
+      }
+    },
+    "relationships": [
+      {
+        "targetAssetId": "24087611-8ad9-4c66-b124-44450b317b54",
+        "targetAssetType": "LOGIC",
+        "relationshipType": "CALLS",
+        "direction": "OUTGOING",
+        "description": "调用CourseCategoryController_getCourseCategoryRootTree API获取课程分类树"
+      },
+      {
+        "targetAssetId": "252111b8-2715-41c3-bd1a-54e7dc4d113d",
+        "targetAssetType": "LOGIC",
+        "relationshipType": "CALLS",
+        "direction": "OUTGOING",
+        "description": "调用CourseStudentController_getShareFields API获取课程共享范围
